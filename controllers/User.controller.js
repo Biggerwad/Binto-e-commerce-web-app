@@ -1,11 +1,13 @@
 import User from "../model/User.model.js";
+import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
 /* GET ALL USERS */
 export const getAllUsers = async (req, res) => {
-    let users ;
+    let users;
     try {
-        users = await User.find({});
+        // Couldn't return the data in the model format.
+        users = await User.find({}, { _id: 0, __v: 0 });
         return res.status(200).json(users);
     } catch (err) {
         console.log(err)
@@ -39,6 +41,7 @@ export const userSignup = async (req, res) => {
         lastname,
         email,
         password: hash,
+        cart: {},
     })
 
     try {
@@ -57,25 +60,45 @@ export const userSignin = async (req, res, next) => {
         password,
     } = req.body;
 
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "User not found in DB" })
+        }
+
+        const userPassword = bcrypt.compareSync(password, user.password);
+        if (!userPassword) {
+            return res.status(401).json({ msg: "User not found" });
+        };
+        const token = jwt.sign({ user }, process.env.JWT_SECRET);
+
+        return res.status(200).json({ token, user });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+
+}
+
+/* USER SIGNOUT */
+export const userSignout = async (req, res) => {
+    const {
+        email,
+    } = req.body;
+
     let user;
     try {
-        user = await User.findOne({ email });
+        user = await User.findOne({ email })
     } catch (err) {
         console.log(err);
     }
     if (!user) {
-        return res.status(402).json({ message: "User not found in DB" })
-    }
-    let userPassword;
-    try {
-        userPassword = bcrypt.compareSync(password, user.password);
-    } catch (err) {
-        console.log(err);
+        return res.status(404).json({ message: "User not found." });
     }
 
-    if (!userPassword) {
-        return res.status(401).json({ msg: "User not found" });
-    }
+    User.findOneAndUpdate({ email: user.email }, { online: false }, {
+        upsert: true
+    })
+
+    // user.online = false;
     return res.status(200).json(user);
-    next();
 }

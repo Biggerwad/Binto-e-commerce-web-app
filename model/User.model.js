@@ -1,13 +1,13 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const userSchema = new mongoose.Schema({
-    firstname: {
+    firstName: {
         type: String,
         required: true,
         min: 2,
         max: 50,
     },
-    firstname: {
+    lastName: {
         type: String,
         required: true,
         min: 2,
@@ -24,6 +24,25 @@ const userSchema = new mongoose.Schema({
         required: true,
         min: 5,
     },
+    cart: {
+        items: [
+            {
+                itemId: {
+                    type: Schema.Types.ObjectId,
+                    ref: "Items", required: true,
+                },
+                itemQty: {
+                    type: Number,
+                    required: true,
+                },
+            }
+        ]
+    },
+    online: {
+        type: Boolean,
+        default: false,
+        required: true,
+    }
 },
     { timestamps: true }
 )
