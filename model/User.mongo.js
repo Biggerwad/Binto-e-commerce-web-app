@@ -6,7 +6,7 @@ export const addToCart = async (item) => {
     // find if the product already exists in the cart or not, if yes, index will be 1, else -1;
     const itemIndex = User.cart.items.findIndex(cartItem => {
         return cartItem.itemId.toString() === item._id.toString();
-    })
+    });
 
     let newQty = 1;
     const currentItems = [...User.cart.items];
@@ -29,7 +29,7 @@ export const addToCart = async (item) => {
 
     User.cart.items.find
 
-    return User.save()
+    return User.save();
 }
 /* INCREMENT ITEM */
 // export const 

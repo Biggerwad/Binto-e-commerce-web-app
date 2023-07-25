@@ -8,13 +8,7 @@ export const isVerified = async (req, res, next) => {
             const token = bearer[1];
 
             const vToken = jwt.verify(token, process.env.JWT_SECRET);
-            // , (err, authData) => {
-            //     if (err) {
-            //         res.status(403).json({ error: err});
-            //     } else {
-
-            //     }
-            // }
+            
             req.user = vToken;
             next();
         }

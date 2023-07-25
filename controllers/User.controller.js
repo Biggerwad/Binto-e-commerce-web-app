@@ -1,6 +1,7 @@
 import User from "../model/User.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import Items from "../model/items.model.js";
 
 /* GET ALL USERS */
 export const getAllUsers = async (req, res) => {
@@ -72,11 +73,49 @@ export const userSignin = async (req, res, next) => {
         };
         const token = jwt.sign({ user }, process.env.JWT_SECRET);
 
-        return res.status(200).json({ token, user });
+        return res.status(200).json({ token });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 
+
+}
+
+
+/* ADD TO CART */
+export const addToCart = async (req, res) => {
+    const { email, item } = req.body;
+
+    try {
+        const user = await User.findOne(email);
+        if (!user) {
+            return res.send('Login with right email!');
+        }
+        const cItem = await Items.findOne({ title: item });
+        if (!cItem) {
+            res.status(403).json({ msg: "I tem not found" });
+        }
+        /* former cart items 
+        then add new ones */
+
+        const currentItem = [...user.cart.items];
+        // check if item exists in cart already
+        // const exists = currentItem.findIndex((x) => {
+        //     return x.item.toString() === cItem.toString();
+        // });
+
+        // if (exists < 0) {
+        //     currentItem.push({ item: cItem });
+        // }
+
+        // user.cart = {
+        //     items: currentItem,
+        // }
+        user.save();
+        return res.status(201).json(currentItem);
+    } catch (err) {
+        return res.send(err);
+    }
 }
 
 /* USER SIGNOUT */

@@ -1,11 +1,11 @@
 import mongoose, { Schema } from "mongoose";
 
 const adminSchema = new mongoose.Schema({
-    firstName: {
+    firstname: {
         type: String,
         required: true,
     },
-    lastName: {
+    lastname: {
         type: String,
         required: true,
     },
@@ -14,6 +14,10 @@ const adminSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
+    password: {
+        type: String,
+        required: true,
+    }
 },
     { timestamps: true }
 )
