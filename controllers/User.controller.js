@@ -2,6 +2,22 @@ import User from "../model/User.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import Items from "../model/items.model.js";
+// import app from '../app.js';
+import session from 'express-session';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const config = {
+    SECRET: process.env.SECRET
+}
+
+// app.use(session({
+//     name: 'sessionId',
+//     secret: config.SECRET,
+//     resave: false,
+//     saveUninitialized: false,
+// }))
 
 /* GET ALL USERS */
 export const getAllUsers = async (req, res) => {
@@ -50,8 +66,13 @@ export const userSignup = async (req, res) => {
     } catch (err) {
         console.log(err)
     }
+    const token = jwt.sign({newUser},process.env.JWT_SECRET);
 
-    return res.status(201).json(newUser);
+    return res.status(201).json({
+        data : {
+            Name: newUser.firstName
+        }
+    });
 }
 
 /* USER SIGN IN */
@@ -87,32 +108,10 @@ export const addToCart = async (req, res) => {
     const { email, item } = req.body;
 
     try {
-        const user = await User.findOne(email);
-        if (!user) {
-            return res.send('Login with right email!');
+        const find = await Items.find({ title: item });
+        if (!find) {
+            return res.status.json({ what: "NO" });
         }
-        const cItem = await Items.findOne({ title: item });
-        if (!cItem) {
-            res.status(403).json({ msg: "I tem not found" });
-        }
-        /* former cart items 
-        then add new ones */
-
-        const currentItem = [...user.cart.items];
-        // check if item exists in cart already
-        // const exists = currentItem.findIndex((x) => {
-        //     return x.item.toString() === cItem.toString();
-        // });
-
-        // if (exists < 0) {
-        //     currentItem.push({ item: cItem });
-        // }
-
-        // user.cart = {
-        //     items: currentItem,
-        // }
-        user.save();
-        return res.status(201).json(currentItem);
     } catch (err) {
         return res.send(err);
     }
@@ -140,4 +139,16 @@ export const userSignout = async (req, res) => {
 
     // user.online = false;
     return res.status(200).json(user);
+}
+
+const checkLoggedIn = (req, res, next) => {
+    const { name } = req.body;
+    const loggedIn = req.user && req.Authenticated
+    req.session.username = name;
+
+    if (!loggedIn) {
+        console.log('Login first')
+    } else {
+        next()
+    }
 }

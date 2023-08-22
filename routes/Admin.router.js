@@ -16,12 +16,12 @@ adminRouter.get('/allitems', getAllItems)
 /* UPDATE */
 
 // signup Admin
-adminRouter.post('/signup', adminSignup)
+adminRouter.post('/signup', adminSignup);
 // Add items
-adminRouter.post('/additem', isVerified, addItem)
+adminRouter.post('/additem', isVerified, addItem);
 /* DELETE ITEM */
-adminRouter.delete('/deleteitem', isVerified, deleteItem)
-adminRouter.post('/updateitem', isVerified, updateItem)
+adminRouter.delete('/deleteitem', isVerified, deleteItem);
+adminRouter.post('/updateitem', isVerified, updateItem);
 // adminRouter.patch("/", updateItem)
 // adminRouter.post
 // adminRouter.patch

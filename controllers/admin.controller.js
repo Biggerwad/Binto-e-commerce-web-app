@@ -14,32 +14,33 @@ export const adminSignup = async (req, res) => {
     let existingAdmin;
     try {
         existingAdmin = await Admin.findOne({ email: email })
-    } catch (err) {
-        console.log(err);
+
+        if (existingAdmin) {
+            res.status(403).json({ error: "Admin already exists" });
+        }
+        const saltRounds = 15;
+        const salt = bcrypt.genSaltSync(saltRounds);
+        const hash = bcrypt.hashSync(password, salt)
+        const token = jwt.sign({ existingAdmin }, process.env.JWT_SECRET);
+        const newAdmin = await new Admin({
+            firstname,
+            lastname,
+            email,
+            password: hash,
+            cart: {},
+        }).save()
+        return res.status(201).json({
+            data: {
+                userId: newAdmin._id,
+                firstname: newAdmin.firstname,
+                token: token
+            }
+        });
     }
-
-    if (existingAdmin) {
-        res.status(403).json({ error: "Admin already exists" });
-    }
-    const saltRounds = 15;
-    const salt = bcrypt.genSaltSync(saltRounds);
-    const hash = bcrypt.hashSync(password, salt)
-
-    const newAdmin = new Admin({
-        firstname,
-        lastname,
-        email,
-        password: hash,
-        cart: {},
-    })
-
-    try {
-        await newAdmin.save()
-    } catch (err) {
+    catch (err) {
         console.log(err)
     }
 
-    return res.status(201).json(newAdmin);
 }
 
 /* SIGN IN */
@@ -47,15 +48,17 @@ export const adminSignin = async (req, res) => {
     const { email, password } = req.body;
     let admin;
     try {
-        admin = await Admin.findOne({ email })
+        admin = await Admin.findOne({ email: email });
         if (!admin) {
             res.status(403).json({ msg: "Admin not found!" });
+        } else {
+
+            const token = jwt.sign({ admin }, process.env.JWT_SECRET, {
+                // expire in 30 mins
+                expiresIn: 1000 * 60 * 30,
+            })
+            res.status(200).json({ token });
         }
-        const token = jwt.sign({ admin }, process.env.JWT_SECRET, {
-            // expire in 30 mins
-            expiresIn: 1000 * 60 * 30,
-        })
-        res.status(200).json({ token });
     } catch (err) {
 
     }
@@ -114,37 +117,21 @@ export const deleteItem = async (req, res) => {
 
 /* UPDATE ITEM */
 export const updateItem = async (req, res) => {
-    const { id,
-        newtitle,
-        newprice,
-        newimage,
-        newdescription } = req.body;
-
     try {
-        // const filter = { _id: id }
-        // const update = 
+        const itemId = req.params.id;
+        const item = await Items.findById(itemId)
 
-        //This section gives the same object without anything updated
-        const updateResult = await Items.findByIdAndUpdate(id, {
-            title: newtitle,
-            price: newprice,
-        });
-        if (!updateResult) {
-            return res.status(401).json({ msg: "Error Updating" })
-        } else {
-            return res.status(200).json({ updateResult });
+        if (!item) {
+            return res.status(400).json({ message: 'Item not found!' });
         }
+        item?.set(req.body)
+        item?.save()
 
-        // if (updateResult.modifiedCount === 1) {
-        //     res.json({ updateResult })
-        // } else {
-        //     res.send("Failed");
-        // }
-
-    } catch (err) {
-        res.send(err);
+        return res.status(200).json(item)
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json('Internal Server Error');
     }
-
 }
 
 /* VIEW All item */

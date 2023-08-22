@@ -10,6 +10,7 @@ userRouter.get('/signin', userSignin);
 // userRouter.get('/signout', userSignout);
 
 /* UPDATE */
-userRouter.post('/addtocart', addToCart)
-userRouter.post('/signup', userSignup); 
+// userRouter.post('/addtocart', checkLoggedIn, addToCart)
+userRouter.post('/signup', userSignup);
+
 // isVerified,

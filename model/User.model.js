@@ -4,25 +4,25 @@ const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
         required: true,
-        min: 2,
-        max: 50,
+        // min: 2,
+        // max: 50,
     },
     lastName: {
         type: String,
         required: true,
-        min: 2,
-        max: 50,
+        // min: 2,
+        // max: 50,
     },
     email: {
         type: String,
         required: true,
         unique: true,
-        max: 15,
+        // max: 15,
     },
     password: {
         type: String,
         required: true,
-        min: 5,
+        // min: 5,
     },
     cart: {
         items: [
@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema({
     online: {
         type: Boolean,
         default: false,
-        required: true,
+        // required: true,
     }
 },
     { timestamps: true }
